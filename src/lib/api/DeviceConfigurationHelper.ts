@@ -1,0 +1,90 @@
+import { Logger } from "homebridge";
+import { TuyaIRConfiguration } from "../model/TuyaIRConfiguration";
+import { APIInvocationHelper } from "./APIInvocationHelper";
+import { BaseHelper } from "./BaseHelper";
+
+export class DeviceConfigurationHelper extends BaseHelper {
+
+    private static _instance: DeviceConfigurationHelper;
+
+    private constructor(config: TuyaIRConfiguration, log: Logger) {
+        super(config, log);
+    }
+
+    public static Instance(config: TuyaIRConfiguration, log: Logger) {
+        if(this._instance) {
+            this._instance.config = config;
+            this._instance.log = log;
+        } else {
+            this._instance = new this(config, log);
+        }
+        return this._instance;
+    }
+
+    fetchDevices(deviceId: string) {
+        return new Promise((resolve) => {
+            this.log.debug(`This is the config: ${JSON.stringify(this.config)}`);
+            if (!this.config.autoFetchRemotesFromServer) {
+                this.log.info("Auto discovery of remotes disabled...");
+                this.manualFetch(resolve);
+            } else {
+                this.log.info("Auto discovery of remotes enabled. Fetching with API...");
+                this.autoFetch(deviceId, resolve);
+            }
+        });
+    }
+
+    private manualFetch(cb) {
+        if (!this.config.configuredRemotes || this.config.configuredRemotes.length === 0) {
+            this.log.warn("No configured remotes found. Nothing to fetch manually.");
+            cb([]);
+            return;
+        }
+        const devs: unknown[] = [];
+        for (let i = 0; i < this.config.configuredRemotes.length; i++) {
+            const dev = this.config.configuredRemotes[i];
+            this.fetchRemoteDetails(this.config.irDeviceId, dev.id, (device) => {
+                device.config = this.config;
+                device.diy = dev.diy;
+                devs.push(device);
+                if (devs.length == this.config.configuredRemotes.length) {
+                    cb(devs);
+                }
+            });
+        }
+    }
+
+    private autoFetch(deviceId, cb) {
+        APIInvocationHelper.invokeTuyaIrApi(this.log, this.config, `${this.apiHost}/v2.0/infrareds/${deviceId}/remotes`, "GET", {}, (body) => {
+            const devs: unknown[] = [];
+            if (body.success && body.result) {
+                this.log.debug(`API returned ${body.result.length} remotes...`);
+                for (let i = 0; i < body.result.length; i++) {
+                    this.fetchRemoteDetails(deviceId, body.result[i].remote_id, (device) => {
+                        device.config = this.config;
+                        devs.push(device);
+                        if (devs.length == body.result.length) {
+                            cb(devs);
+                        }
+                    })
+                }
+            } else {
+                this.log.warn("API didn't return any devices Using hardcoded devices...");
+                this.manualFetch(cb);
+            }
+        })
+    }
+
+    private fetchRemoteDetails(irId, id, callback) {
+        this.log.debug(this.apiHost + `/v1.0/devices/${id}`);
+        APIInvocationHelper.invokeTuyaIrApi(this.log, this.config, this.apiHost + `/v1.0/devices/${id}`, "GET", {}, (body) => {
+            if (body.success) {
+                callback(body.result);
+            } else {
+                this.log.error("Failed to get remote configuration for: " + id);
+                this.log.error(`Server returned error: '${body.msg}'`);
+                callback({});
+            }
+        });
+    }
+}

@@ -1,0 +1,141 @@
+{
+  "pluginAlias": "TuyaIR",
+  "pluginType": "platform",
+  "headerDisplay": "**Control your Tuya Smart IR based devices in HomeKit. Also works with Smart Home IR Blaster. You can add multiple Smart IR device to single configuration.**",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "required": ["name", "tuyaAPIClientId", "tuyaAPISecret", "deviceRegion"],
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "TuyaIR"
+      },
+      "tuyaAPIClientId": {
+        "title": "Client ID",
+        "type": "string",
+        "default": "",
+        "description": "Your Tuya IOT cloud project's client ID"
+      },
+      "tuyaAPISecret": {
+        "title": "Client Secret",
+        "type": "string",
+        "default": "",
+        "description": "Your Tuya IOT cloud project's secret"
+      },
+"tuyaProjects": {
+  "title": "Tuya Cloud Projects",
+  "type": "array",
+  "description": "Tuya cloud projects used for automatic API quota failover",
+  "items": {
+    "type": "object",
+    "properties": {
+      "clientId": {
+        "title": "Client ID",
+        "type": "string"
+      },
+      "secret": {
+        "title": "Client Secret",
+        "type": "string"
+      },
+      "region": {
+        "title": "Region",
+        "type": "string",
+        "default": "in"
+      }
+    },
+    "required": ["clientId", "secret"]
+  }
+},
+      "deviceRegion": {
+        "title": "Device Region",
+        "type": "string",
+        "default": "",
+        "oneOf": [
+          {
+            "title": "India",
+            "enum": [
+              "in"
+            ]
+          },
+          {
+            "title": "Europe",
+            "enum": [
+              "eu"
+            ]
+          },
+          {
+            "title": "China",
+            "enum": [
+              "cn"
+            ]
+          },
+          {
+            "title": "America",
+            "enum": [
+              "us"
+            ]
+          }
+        ]
+      },
+      "smartIR": {
+        "title": "List of Smart IR Devices",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "title": "Smart IR Details",
+          "required": ["deviceId", "autoFetchRemotesFromServer"],
+          "properties": {
+            "deviceId": {
+              "title": "Smart IR Device ID",
+              "type": "string",
+              "default": "",
+              "description": "Device Id of the Smart IR Device"
+            },
+            "autoFetchRemotesFromServer": {
+              "title": "Fetch configured remotes automatically?",
+              "type": "boolean",
+              "default": true,
+              "description": "Uncheck this box if your IR remotes are not discovered automatically. You will need to add your remote IDs manually below"
+            },
+            "configuredRemotes": {
+              "title": "List of configured Smart IR Remotes",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "Remote Details",
+                "properties": {
+                  "id": {
+                    "title": "Remote Id",
+                    "type": "string",
+                    "description": "Remote ID"
+                  },
+                  "diy": {
+                    "title": "Is this Remote DIY?",
+                    "type": "boolean"
+                  },
+                  "model": {
+                    "title": "Model",
+                    "type": "string",
+                    "default": "Unknown",
+                    "description": "Model of the Remote"
+                  },
+                  "brand": {
+                    "title": "Brand",
+                    "type": "string",
+                    "default": "Unknown",
+                    "description": "Brand of the Remote"
+                  }
+                }
+              },
+              "condition": {
+                "functionBody": "return model.smartIR[arrayIndices].autoFetchRemotesFromServer === false;"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
