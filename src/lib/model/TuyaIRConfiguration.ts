@@ -4,7 +4,7 @@ import { Device } from "./Device";
 export interface TuyaProject {
     clientId: string;
     secret: string;
-    region?: string;
+    readonly region?: string;
 }
 
 export class TuyaIRConfiguration {

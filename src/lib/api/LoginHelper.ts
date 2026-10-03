@@ -101,7 +101,7 @@ export class LoginHelper extends BaseHelper {
                 this.log.info(`Token refreshed successfully. Next refresh after ${body.result.expire_time} seconds`);
             } else {
                 this.log.error(`Unable to refresh token: ${body.msg}. Trying fresh login...`);
-                this.login();
+                void this.login();
             }
         });
     }
@@ -120,7 +120,7 @@ export class LoginHelper extends BaseHelper {
     private handleLoginError(errorMessage) {
         this.log.error(`Failed to login due to error '${errorMessage}'. Retying after 1 minute...`);
         setTimeout(() => {
-            this.login();
+           void this.login();
         }, 60000);
     }
 

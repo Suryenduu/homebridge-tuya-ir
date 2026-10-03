@@ -95,7 +95,7 @@ class LoginHelper extends BaseHelper_1.BaseHelper {
             }
             else {
                 this.log.error(`Unable to refresh token: ${body.msg}. Trying fresh login...`);
-                this.login();
+                void this.login();
             }
         });
     }
@@ -111,7 +111,7 @@ class LoginHelper extends BaseHelper_1.BaseHelper {
     handleLoginError(errorMessage) {
         this.log.error(`Failed to login due to error '${errorMessage}'. Retying after 1 minute...`);
         setTimeout(() => {
-            this.login();
+            void this.login();
         }, 60000);
     }
 }
