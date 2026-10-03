@@ -6,7 +6,7 @@ import { APIInvocationHelper } from "./APIInvocationHelper";
 import { BaseHelper } from "./BaseHelper";
 
 export class LoginHelper extends BaseHelper {
-    private static _instance: LoginHelper;
+    private static instances = new Map<string, LoginHelper>();
     private accessToken = "";
     private refreshToken = "";
 
@@ -15,7 +15,15 @@ export class LoginHelper extends BaseHelper {
     }
 
     public static Instance(config: TuyaIRConfiguration, log: Logger) {
-        return this._instance || (this._instance = new this(config, log));
+        const clientId = config.tuyaAPIClientId;
+        let instance = this.instances.get(clientId);
+
+        if (!instance) {
+            instance = new this(config, log);
+            this.instances.set(clientId, instance);
+        }
+
+        return instance;
     }
 
     getAccessToken() {

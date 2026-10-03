@@ -15,7 +15,13 @@ class LoginHelper extends BaseHelper_1.BaseHelper {
         this.refreshToken = "";
     }
     static Instance(config, log) {
-        return this._instance || (this._instance = new this(config, log));
+        const clientId = config.tuyaAPIClientId;
+        let instance = this.instances.get(clientId);
+        if (!instance) {
+            instance = new this(config, log);
+            this.instances.set(clientId, instance);
+        }
+        return instance;
     }
     getAccessToken() {
         return this.accessToken;
@@ -110,4 +116,5 @@ class LoginHelper extends BaseHelper_1.BaseHelper {
     }
 }
 exports.LoginHelper = LoginHelper;
+LoginHelper.instances = new Map();
 //# sourceMappingURL=LoginHelper.js.map
